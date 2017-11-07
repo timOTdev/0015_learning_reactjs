@@ -167,3 +167,454 @@ const MyComponent = () => {
     </div>
 }
 ```
+
+# 4. Props and States
+## Using properties
+- We are going to add some properties
+- This makes it more dynamic and reusable
+- Similar to adding attributes to HTML
+- We use JSX expressions to print out the component
+```js
+class MyComponent extends React.Component {
+    render() {
+        return <div>
+            <h1>{this.props.text}</h1>
+            <p>{this.props.children}</p>
+        </div>
+    }
+}   
+
+ReactDOM.render(
+    <div>
+        <MyComponent text="Hello World">
+            This is message 1
+        </MyComponent>
+        <MyComponent text="I am a Component">
+            This is message 2
+        </MyComponent>
+        <MyComponent text="I have been reused!">
+            This is message 3
+        </MyComponent>
+    </div>
+    document.getElementbyId('react-container')
+)
+```
+
+## Handling events
+- We start with a single React file
+- Later, we will build our app for production with webpack
+- We add note sticky with buttons to edit and remove each sticky
+```js
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="https://fb.me/react-15.2.1.js"></script>
+        <script src="https://fb.me/react-dom-15.2.1.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.js"></script>
+        <link rel="stylesheet" type="text/css" href="style.css">
+        <title>Building the Note Board</title>
+    </head>
+    <body>
+        <div id='react-container'></div>
+        <script type="text/babel">
+        var Note = React.createClass({
+            edit() {
+                alert("Editing Note")
+            },
+
+            remove() {
+                alert("Removing Note")
+            },
+
+            render() {
+                return (
+                    <div className="note">
+                        <p>{this.props.children}</p>
+                        <span>
+                            <button onClick={this.edit}>EDIT</button>
+                            <button onClick={this.remove}>X</button>
+                        </span>
+                    </div>
+                )
+            }
+        })
+
+        ReactDOM.render(
+            <Note>Hello World</Note>,
+            document.getElementById('react-container')
+        )
+        </script>
+    </body>
+</html>
+```
+
+## Using state
+- Here we are working with an example involved a checkbox
+- It can either be checked or unchecked
+```js
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="https://fb.me/react-15.2.1.js"></script>
+        <script src="https://fb.me/react-dom-15.2.1.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.js"></script>
+        <link rel="stylesheet" type="text/css" href="style.css">
+        <title>Building the Note Board</title>
+    </head>
+    <body>
+        <div id='react-container'></div>
+        <script type="text/babel">
+        var Checkbox = React.createClass({
+            getInitialState() {
+                return {checked: false}
+            },
+            handleCheck() {
+                this.setState({checked: !this.state.checked})
+            },
+            render() {
+                var msg
+                if(this.state.checked) {
+                    msg = "checked"
+                } else {
+                    msg = "unchecked"
+                }
+                return (
+                    <div>
+                        <input type="checkbox" 
+                            onChange={this.handleCheck} />
+                        <p>This box is {msg}</p>
+                    </div>
+                )
+            }
+        })
+
+        ReactDOM.render(
+            <Checkbox />
+            document.getElementById('react-container')
+        )
+        </script>
+    </body>
+</html>
+```
+
+- If the initial box is checked
+```js
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="https://fb.me/react-15.2.1.js"></script>
+        <script src="https://fb.me/react-dom-15.2.1.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.js"></script>
+        <link rel="stylesheet" type="text/css" href="style.css">
+        <title>Building the Note Board</title>
+    </head>
+    <body>
+        <div id='react-container'></div>
+        <script type="text/babel">
+        var Checkbox = React.createClass({
+            getInitialState() {
+                return {checked: true}
+            },
+            handleCheck() {
+                this.setState({checked: !this.state.checked})
+            },
+            render() {
+                var msg
+                if(this.state.checked) {
+                    msg = "checked"
+                } else {
+                    msg = "unchecked"
+                }
+                return (
+                    <div>
+                        <input type="checkbox" 
+                            onChange={this.handleCheck}
+                            defaultChecked={this.state.checked} />
+                        <p>This box is {msg}</p>
+                    </div>
+                )
+            }
+        })
+
+        ReactDOM.render(
+            <Checkbox />
+            document.getElementById('react-container')
+        )
+        </script>
+    </body>
+</html>
+```
+
+## Adding state to the note component
+- Now back to our sticky note app
+- We need to make a edit and delete function
+- Eve also refactored to a ternary operator
+```js
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="https://fb.me/react-15.2.1.js"></script>
+        <script src="https://fb.me/react-dom-15.2.1.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.js"></script>
+        <link rel="stylesheet" type="text/css" href="style.css">
+        <title>Building the Note Board</title>
+    </head>
+    <body>
+        <div id='react-container'></div>
+        <script type="text/babel">
+        var Note = React.createClass({
+            getInitialState() {
+                return {editing: false}
+            },
+            edit() {
+                this.setState({editing: true})
+            },
+            save() {
+                this.setState({editing: false})
+            },
+            remove() {
+                alert("Removing Note")
+            },
+            renderForm() {
+                return (
+                    <div className="note">
+                        <textarea></textarea>
+                        <button onClick={this.save}>Save</button>
+                    </div>
+                )
+            },
+            renderDisplay() {
+                return (
+                    <div className="note">
+                        <p>{this.props.children}</p>
+                        <span>
+                            <button onClick={this.edit}>EDIT</button>
+                            <button onClick={this.remove}>X</button>
+                        </span>
+                    </div>
+                )
+
+            },
+            render() {
+                (this.state.editing) ? this.renderForm()
+                                     : this.renderDisplay()
+            }
+        })
+
+        ReactDOM.render(
+            <Note>Hello World</Note>,
+            document.getElementById('react-container')
+        )
+        </script>
+    </body>
+</html>
+```
+
+## Using refs
+- `refs` are useful to access the underlying DOM node when we can't access via state or props
+- So if we want to grab the value that the person types into the textarea
+```js
+       var Note = React.createClass({
+            getInitialState() {
+                return {editing: false}
+            },
+            edit() {
+                this.setState({editing: true})
+            },
+            save() {
+                var val = this.refs.newText.value
+                alert('Later we will save this value: ' + val)
+                this.setState({editing: false})
+            },
+            remove() {
+                alert("Removing Note")
+            },
+            renderForm() {
+                return (
+                    <div className="note">
+                        <textarea ref="newText"></textarea>
+                        <button onClick={this.save}>Save</button>
+                    </div>
+                )
+            },
+            renderDisplay() {
+                return (
+                    <div className="note">
+                        <p>{this.props.children}</p>
+                        <span>
+                            <button onClick={this.edit}>EDIT</button>
+                            <button onClick={this.remove}>X</button>
+                        </span>
+                    </div>
+                )
+
+            },
+            render() {
+                (this.state.editing) ? this.renderForm()
+                                     : this.renderDisplay()
+            }
+        })
+
+        ReactDOM.render(
+            <Note>Hello World</Note>,
+            document.getElementById('react-container')
+        )
+```
+
+## PropTypes
+- We set up a `propTypes` to validate information coming in
+- We don't want people to make more than 100 sticky notes or the app would break
+- We set up a `propTypes` to help with this
+- It is not required but a nice enhancement
+- Here, we want the count to be number and to be less than 100
+```js
+       var Note = React.createClass({
+            getInitialState() {
+                return {editing: false}
+            },
+            edit() {
+                this.setState({editing: true})
+            },
+            save() {
+                var val = this.refs.newText.value
+                alert('Later we will save this value: ' + val)
+                this.setState({editing: false})
+            },
+            remove() {
+                alert("Removing Note")
+            },
+            renderForm() {
+                return (
+                    <div className="note">
+                        <textarea ref="newText"></textarea>
+                        <button onClick={this.save}>Save</button>
+                    </div>
+                )
+            },
+            renderDisplay() {
+                return (
+                    <div className="note">
+                        <p>{this.props.children}</p>
+                        <span>
+                            <button onClick={this.edit}>EDIT</button>
+                            <button onClick={this.remove}>X</button>
+                        </span>
+                    </div>
+                )
+
+            },
+            render() {
+                (this.state.editing) ? this.renderForm()
+                                     : this.renderDisplay()
+            }
+        })
+
+        var Board = React.createClass({
+            propTypes: {
+                count: function(props, propName) {
+                    if(typeof props[propName] !== "number") {
+                        return new Error("The count must be a number")
+                    }
+                    if(props[propName] > 100) {
+                        return new Error('Creating ' + props[propName] + ' notes is ridiculous')
+                    }
+                }
+            },
+            render() {
+                return(
+                    <div className='board'>
+                        {this.props.count}
+                    </div>
+                )
+            }
+        })
+        ReactDOM.render(
+            <Board count={10}/>,
+            document.getElementById('react-container')
+        )
+```
+
+## Adding child elements
+- We need to combine the Board and Note component
+- The Board will be the parent that displays the notes that are held in state
+- We need to change CSS also to make it work
+    - Find the div.note 
+    - Chane position to `relative`, instead of `absolute`
+```js
+       var Note = React.createClass({
+            getInitialState() {
+                return {editing: false}
+            },
+            edit() {
+                this.setState({editing: true})
+            },
+            save() {
+                var val = this.refs.newText.value
+                alert('Later we will save this value: ' + val)
+                this.setState({editing: false})
+            },
+            remove() {
+                alert("Removing Note")
+            },
+            renderForm() {
+                return (
+                    <div className="note">
+                        <textarea ref="newText"></textarea>
+                        <button onClick={this.save}>Save</button>
+                    </div>
+                )
+            },
+            renderDisplay() {
+                return (
+                    <div className="note">
+                        <p>{this.props.children}</p>
+                        <span>
+                            <button onClick={this.edit}>EDIT</button>
+                            <button onClick={this.remove}>X</button>
+                        </span>
+                    </div>
+                )
+
+            },
+            render() {
+                (this.state.editing) ? this.renderForm()
+                                     : this.renderDisplay()
+            }
+        })
+
+        var Board = React.createClass({
+            propTypes: {
+                count: function(props, propName) {
+                    if(typeof props[propName] !== "number") {
+                        return new Error("The count must be a number")
+                    }
+                    if(props[propName] > 100) {
+                        return new Error('Creating ' + props[propName] + ' notes is ridiculous')
+                    }
+                }
+            },
+            getInitialState() {
+                return {
+                    notes: [
+                        'Call Bob',
+                        'Email Sarah',
+                        'Eat lunch',
+                        'Finish proposal'
+                    ]
+                }
+            }
+            render() {
+                return(
+                    <div className='board'>
+                        {this.state.notes.map((note, i) => {
+                            return <Note key={i}>{note}</Note>
+                        })}
+                    </div>
+                )
+            }
+        })
+        ReactDOM.render(
+            <Board count={10}/>,
+            document.getElementById('react-container')
+        )
+```
