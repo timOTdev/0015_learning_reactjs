@@ -539,7 +539,7 @@ ReactDOM.render(
 - The Board will be the parent that displays the notes that are held in state
 - We need to change CSS also to make it work
     - Find the div.note 
-    - Chane position to `relative`, instead of `absolute`
+    - Change position to `relative`, instead of `absolute`
 ```js
        var Note = React.createClass({
             getInitialState() {
@@ -617,4 +617,672 @@ ReactDOM.render(
             <Board count={10}/>,
             document.getElementById('react-container')
         )
+```
+
+# 5. Enhancing Components
+## Updating and removing notes
+- Now we are making a update and remove notes component
+```js
+       var Note = React.createClass({
+            getInitialState() {
+                return {editing: false}
+            },
+            edit() {
+                this.setState({editing: true})
+            },
+            save() {
+                this.props.onChange(this.refs.newText.value, this.props.id)
+                this.setState({editing: false})
+            },
+            remove() {
+                this.props.onRemove(this.props.id)
+            },
+            renderForm() {
+                return (
+                    <div className="note">
+                        <textarea ref="newText"></textarea>
+                        <button onClick={this.save}>Save</button>
+                    </div>
+                )
+            },
+            renderDisplay() {
+                return (
+                    <div className="note">
+                        <p>{this.props.children}</p>
+                        <span>
+                            <button onClick={this.edit}>EDIT</button>
+                            <button onClick={this.remove}>X</button>
+                        </span>
+                    </div>
+                )
+
+            },
+            render() {
+                (this.state.editing) ? this.renderForm()
+                                     : this.renderDisplay()
+            }
+        })
+
+        var Board = React.createClass({
+            propTypes: {
+                count: function(props, propName) {
+                    if(typeof props[propName] !== "number") {
+                        return new Error("The count must be a number")
+                    }
+                    if(props[propName] > 100) {
+                        return new Error('Creating ' + props[propName] + ' notes is ridiculous')
+                    }
+                }
+            },
+            getInitialState() {
+                return {
+                    notes: [
+                        {id: 0, note: 'Call Bob'},
+                        {id: 1, note: 'Email Sarah'},
+                        {id: 2, note: 'Eat Lunch'},
+                        {id: 3, note: 'Finish proposal'},
+                    ]
+                }
+            }
+            update(newText, id) {
+                var notes = this.state.notes.map(
+                    note => (note.id !== id) ? 
+                        note :
+                        {
+                            ...note,
+                            note: newText
+                        }
+                    )
+                this.setSate({notes})
+            },
+            remove(id) {
+                var notes = this.state.notes.filter(note => note.id !== id)
+                this.setState({notes})
+            },
+            eachNote(note) {
+                return (<Note 
+                            key={i}
+                            id={note.id}
+                            onChange={this.update}
+                            onRemove={this.remove}>
+                            {note.note}
+                        </Note>)
+            },
+            render() {
+                return(
+                    <div className='board'>
+                        {this.state.notes.map(this.eachNote)}
+                    </div>
+                )
+            }
+        })
+        ReactDOM.render(
+            <Board count={10}/>,
+            document.getElementById('react-container')
+        )
+```
+
+## Adding new notes
+- We will now add a feature to add new notes
+- We are not longer using the predefined notes
+```js
+       var Note = React.createClass({
+            getInitialState() {
+                return {editing: false}
+            },
+            edit() {
+                this.setState({editing: true})
+            },
+            save() {
+                this.props.onChange(this.refs.newText.value, this.props.id)
+                this.setState({editing: false})
+            },
+            remove() {
+                this.props.onRemove(this.props.id)
+            },
+            renderForm() {
+                return (
+                    <div className="note">
+                        <textarea ref="newText"></textarea>
+                        <button onClick={this.save}>Save</button>
+                    </div>
+                )
+            },
+            renderDisplay() {
+                return (
+                    <div className="note">
+                        <p>{this.props.children}</p>
+                        <span>
+                            <button onClick={this.edit}>EDIT</button>
+                            <button onClick={this.remove}>X</button>
+                        </span>
+                    </div>
+                )
+
+            },
+            render() {
+                (this.state.editing) ? this.renderForm()
+                                     : this.renderDisplay()
+            }
+        })
+
+        var Board = React.createClass({
+            propTypes: {
+                count: function(props, propName) {
+                    if(typeof props[propName] !== "number") {
+                        return new Error("The count must be a number")
+                    }
+                    if(props[propName] > 100) {
+                        return new Error('Creating ' + props[propName] + ' notes is ridiculous')
+                    }
+                }
+            },
+            getInitialState() {
+                return {
+                    notes: []
+                }
+            },
+            nextId() {
+                this.uniqueId = this.uniqueId || 0
+                return this.uniqueId++
+            },
+            add(text) {
+                var notes = [
+                    ...this.state.notes,
+                    {
+                        id: this.nextId(),
+                        note: text
+                    }
+                ]
+            },
+            update(newText, id) {
+                var notes = this.state.notes.map(
+                    note => (note.id !== id) ? 
+                        note :
+                        {
+                            ...note,
+                            note: newText
+                        }
+                    )
+                this.setSate({notes})
+            },
+            remove(id) {
+                var notes = this.state.notes.filter(note => note.id !== id)
+                this.setState({notes})
+            },
+            eachNote(note) {
+                return (<Note 
+                            key={i}
+                            id={note.id}
+                            onChange={this.update}
+                            onRemove={this.remove}>
+                            {note.note}
+                        </Note>)
+            },
+            render() {
+                return(
+                    <div className='board'>
+                        {this.state.notes.map(this.eachNote)}
+                        <button onClick={() => this.add()}></button>
+                    </div>
+                )
+            }
+        })
+        ReactDOM.render(
+            <Board count={10}/>,
+            document.getElementById('react-container')
+        )
+```
+
+## Keys
+- Keys help give children a unique ID so they render properly
+- Children are usually passed among different components, so needs an idetifier
+- This will also help maintain the state and properties correctly
+- Here we are making the notes appear randomly on the board
+- `componentWillMount()` fires before the render() method
+- We also change the positioning in CSS to absolute
+```js
+       var Note = React.createClass({
+            getInitialState() {
+                return {editing: false}
+            },
+            componentWillMount() {
+                this.style = {
+                    right: this.randomBetween(0, window.innerWidth-150, 'px')
+                    top: this.randomBetween(0, window.innerHeight-150, 'px')
+                }
+            },
+            randomBetween(x, y, s) {
+                return (x + Math.ceil(Math.random() *(y-x))) + s 
+            },
+            edit() {
+                this.setState({editing: true})
+            },
+            save() {
+                this.props.onChange(this.refs.newText.value, this.props.id)
+                this.setState({editing: false})
+            },
+            remove() {
+                this.props.onRemove(this.props.id)
+            },
+            renderForm() {
+                return (
+                    <div className="note"
+                         style={this.style}>
+                        <textarea ref="newText"></textarea>
+                        <button onClick={this.save}>Save</button>
+                    </div>
+                )
+            },
+            renderDisplay() {
+                return (
+                    <div className="note"
+                         style={this.style}>
+                        <p>{this.props.children}</p>
+                        <span>
+                            <button onClick={this.edit}>EDIT</button>
+                            <button onClick={this.remove}>X</button>
+                        </span>
+                    </div>
+                )
+
+            },
+            render() {
+                (this.state.editing) ? this.renderForm()
+                                     : this.renderDisplay()
+            }
+        })
+
+        var Board = React.createClass({
+            propTypes: {
+                count: function(props, propName) {
+                    if(typeof props[propName] !== "number") {
+                        return new Error("The count must be a number")
+                    }
+                    if(props[propName] > 100) {
+                        return new Error('Creating ' + props[propName] + ' notes is ridiculous')
+                    }
+                }
+            },
+            getInitialState() {
+                return {
+                    notes: []
+                }
+            },
+            nextId() {
+                this.uniqueId = this.uniqueId || 0
+                return this.uniqueId++
+            },
+            add(text) {
+                var notes = [
+                    ...this.state.notes,
+                    {
+                        id: this.nextId(),
+                        note: text
+                    }
+                ]
+            },
+            update(newText, id) {
+                var notes = this.state.notes.map(
+                    note => (note.id !== id) ? 
+                        note :
+                        {
+                            ...note,
+                            note: newText
+                        }
+                    )
+                this.setSate({notes})
+            },
+            remove(id) {
+                var notes = this.state.notes.filter(note => note.id !== id)
+                this.setState({notes})
+            },
+            eachNote(note) {
+                return (<Note 
+                            key={i}
+                            id={note.id}
+                            onChange={this.update}
+                            onRemove={this.remove}>
+                            {note.note}
+                        </Note>)
+            },
+            render() {
+                return(
+                    <div className='board'>
+                        {this.state.notes.map(this.eachNote)}
+                        <button onClick={() => this.add()}></button>
+                    </div>
+                )
+            }
+        })
+        ReactDOM.render(
+            <Board count={10}/>,
+            document.getElementById('react-container')
+        )
+```
+
+## The component lifecycle
+- Creates hooks for creation, lifetime, and teardown of components
+- Allows you to add libraries, load data, etc. at specific times
+
+### Mounting
+- `getInitialState` allows you to set state of a component
+- `componentWillMount` allows affecting state before render
+- `render`
+- `componentDidMount` fires after the render
+
+### Updating
+- `componentWillReceiveProps` allows to receive objects and affect state
+- `shouldComponentUpdate` is for optimization, will only be called if something changes
+- `componentWillUpdate` is for optimization, will only be called if something changes
+- `render`
+- `componentDidUpdate` fires after all DOM elements have been update
+
+### Unmounting
+- `componentWillUnmount` called before unmounting, all childrens of parents are also unmounted
+
+## Mounting components
+- We are going over `componentWillMount`, `componentDidMount`, `componentWillUnmount`
+```js
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="https://fb.me/react-15.2.1.js"></script>
+        <script src="https://fb.me/react-dom-15.2.1.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.js"></script>
+        <style>
+            #myDiv {
+                background-color: blue;
+                height: 200px;
+                width: 200px;
+            }
+        </style>
+        <title>Component Lifecycle</title>
+    </head>
+    <body>
+        <div id='react-container'></div>
+        <script type="text/babel">
+            var Box = React.createClass({
+                componentWillMount() {
+                    alert('Component is about to mount')
+                },
+                componentDidMount() {
+                    alert('Component just mounted')
+                },
+                render() {
+                    return <div id='myDiv'></div>
+                }
+            })
+
+            ReactDOM.render(
+                <Box />,
+                document.getElementById('react-container')
+            )
+
+            var getRidOfBox = document.getElementById('myDiv')
+            getRidOfBox.onclick = function() {
+                ReactDOM.unmountComponentAtNode(document.getElementById('react-container'))
+                alert('Component is unmounted!')
+            }
+        </script>
+    </body>
+</html>
+```
+
+## Setting properties
+- We are using component life cycles to set properties
+- We are going to set some default props that are resusable
+- We do this with `getDefaultProps()`
+- I still don't understand how it's called with just `{this.props}`
+- Notice we also have to change the style syntax
+```js
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="https://fb.me/react-15.2.1.js"></script>
+        <script src="https://fb.me/react-dom-15.2.1.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.js"></script>
+        <title>Component Lifecycle</title>
+    </head>
+    <body>
+        <div id='react-container'></div>
+        <script type="text/babel">
+            var Box = React.createClass({
+                getDefaultProps() {
+                    return {
+                        backgroundColor: 'purple'
+                        height: 200
+                        width: 200
+                    }
+                }
+                render() {
+                    return <div id='myDiv'>
+                        <div style={this.props}></div>
+                        <section style={this.props}></section>
+                    </div>
+                }
+            })
+
+            ReactDOM.render(
+                <Box />,
+                document.getElementById('react-container')
+            )
+        </script>
+    </body>
+</html>
+```
+
+## Updating components
+- Now we are going to the default styles in the state instead of `getDefaultProps()` component
+- Upon clicking the note, it will turn red
+- `componentDidUpdate()` also tells us that the update was complete
+```js
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="https://fb.me/react-15.2.1.js"></script>
+        <script src="https://fb.me/react-dom-15.2.1.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.js"></script>
+        <title>Component Lifecycle</title>
+    </head>
+    <body>
+        <div id='react-container'></div>
+        <script type="text/babel">
+            var Box = React.createClass({
+                getInitialState() {
+                    return {
+                        backgroundColor: 'purple',
+                        height: 200,
+                        width: 200
+                    }
+                },
+                update() {
+                    this.setState({backgroundColor: 'red'})
+                },
+                componentDidUpdate() {
+                    alert("Component did update")
+                },
+                render() {
+                    return (<div style={this.state}
+                                 onClick={this.update}>
+                            </div>)
+                }
+            })
+
+            ReactDOM.render(
+                <Box />,
+                document.getElementById('react-container')
+            )
+        </script>
+    </body>
+</html>
+```
+
+## Adding lifecycle methods to the bulletin board
+- We now introduce Bacon API and React-Draggable API to the project
+- We also made a method so that the old note is not deleted when we click edit
+- We then added a draggable library so we can move the notes around
+```js
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="https://fb.me/react-15.2.1.js"></script>
+        <script src="https://fb.me/react-dom-15.2.1.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/fetch/1.0.0/fetch.js">
+        </script>
+        <script src="https://npmcdn.com/react-draggable"></script>
+        <link rel="stylesheet" type="text/css" href="style.css">
+        <title>Building the Note Board</title>
+    </head>
+    <body>
+        <div id='react-container'></div>
+        <script type="text/babel">
+        var Note = React.createClass({
+            getInitialState() {
+                return {editing: false}
+            },
+            componentWillMount() {
+                this.style = {
+                    right: this.randomBetween(0, window.innerWidth - 150, 'px'),
+                    top: this.randomBetween(0, window.innerHeight -150, 'px')
+                }
+            },
+            componentDidUpdate() {
+                if (this.state.editing) {
+                    this.refs.newText.focus()
+                    this.refs.newText.select()
+                }
+            },
+            shouldComponentUpdate(nextProps, nextState) {
+                return this.props.children !== nextProps.children || this.state !== nextState
+            },
+            randomBetween(x, y, s) {
+                return (x + Math.ceil(Math.random() * (y-x))) + s
+            },
+            edit() {
+                this.setState({editing: true})
+            },
+            save() {
+                this.props.onChange(this.refs.newText.value, this.props.id)
+                this.setState({editing: false})
+            },
+            remove() {
+                this.props.onRemove(this.props.id)
+            },
+            renderForm() {
+                return (
+                    <div className="note" 
+                         style={this.style}>
+                      <textarea ref="newText"
+                                defaultValue={this.props.children}>
+                      </textarea>
+                      <button onClick={this.save}>SAVE</button>
+                    </div>
+                )
+            },
+            renderDisplay() {
+                return ( 
+                    <div className="note"
+                         style={this.style}>
+                        <p>{this.props.children}</p>
+                        <span>
+                          <button onClick={this.edit}>EDIT</button>
+                          <button onClick={this.remove}>X</button>
+                        </span>
+                    </div>
+                    )
+            },
+            render() {
+              return ( <ReactDraggable>
+                       {(this.state.editing) ? this.renderForm()
+                                          : this.renderDisplay()}
+                       </ReactDraggable>
+                )
+
+            }
+        })
+
+        var Board = React.createClass({
+            propTypes: {
+                count: function(props, propName) {
+                    if(typeof props[propName] !== "number") {
+                        return new Error("the count must be a number")
+                    } 
+
+                    if(props[propName] > 100) {
+                        return new Error('Creating ' + props[propName] + ' notes is ridiculous')
+                    }
+                }
+            },
+            getInitialState() {
+                return {
+                    notes: []
+                }
+            },
+            componentWillMount() {
+                if (this.props.count) {
+                    var url = `http://baconipsum.com/api/?type=all-meat&sentences=${this.props.count}`
+                    fetch(url)
+                          .then(results => results.json())
+                          .then(array => array[0])
+                          .then(text => text.split('. '))
+                          .then(array => array.forEach(
+                                sentence => this.add(sentence)))
+                          .catch(function(err) {
+                            console.log("Didn't connect to the API", err)
+                          })
+                }
+            },
+            nextId() {
+                this.uniqueId = this.uniqueId || 0
+                return this.uniqueId++
+            },
+            add(text) {
+                var notes = [
+                    ...this.state.notes,
+                    {
+                        id: this.nextId(),
+                        note: text
+                    }
+                ]
+                this.setState({notes})
+            },
+            update(newText, id) {
+                var notes = this.state.notes.map(
+                    note => (note.id !== id) ?
+                       note : 
+                        {
+                            ...note, 
+                            note: newText
+                        }
+                    )
+                this.setState({notes})
+            },
+            remove(id) {
+                var notes = this.state.notes.filter(note => note.id !== id)
+                this.setState({notes})
+            },
+            eachNote(note) {
+                return (<Note key={note.id}
+                              id={note.id}
+                              onChange={this.update}
+                              onRemove={this.remove}>
+                          {note.note}
+                        </Note>)
+            },
+            render() {
+                return (<div className='board'>
+                           {this.state.notes.map(this.eachNote)}
+                           <button onClick={() => this.add('New Note')}>+</button>
+                        </div>)
+            }
+        })
+        
+        ReactDOM.render(<Board count={50}/>, 
+            document.getElementById('react-container'))
+
+        </script>
+    </body>
+</html>
 ```
