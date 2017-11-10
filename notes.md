@@ -1286,3 +1286,40 @@ ReactDOM.render(
     </body>
 </html>
 ```
+
+# 6. Creating an App
+## Using create-react-app
+- Our local app is a single file and slows the load time
+- We can download create-react-app to make the build process quicker
+- It's a utility to set up react
+- So you need Create-React-APP, NodeJS, and NPM installed globally
+- We will install react globally and create a project:
+1. `sudo npm install -g create-react-app`
+2. Navigate to folder where you want to make the app in the terminal
+3. `create-react-app <project name>`
+4. Go into that directory and start the project by running `npm start`
+
+## Launching the bulletin board app
+1. Make sure you have a node_module folder
+2. In src folder, App.js is the main file
+    - We are going have it render our Board component
+    - We rename App.js to Board.js
+    - We also have Note.js for our Note component
+3. We need to save React-draggable API as a dependency also
+    - Use `npm install --save react-draggable`
+4. Adjust index.js
+    - Where our ReactDOM.render() is happening
+5. Make sure our index.html has the correct div id of "react container"
+6. Run the server with `npm start` to start our server
+    - Use Ctrl + C to quit
+7. Make a build production
+    - Creates a build so our app is even more efficient
+
+# Conclusion
+## Next Steps
+- Check out [React](https://reactjs.org/) to learn more
+- Check out [React Native](https://facebook.github.io/react-native/) for mobile apps
+- Check out [Flux](https://facebook.github.io/flux) for 
+    - Use one way data flow paradigm
+- Check out [Redux](https://redux.js.org/) for
+    - Flux library that simplifies state in complicated applications
